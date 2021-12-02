@@ -8,7 +8,8 @@
 # Led_G pad	                  D5	            Green LED
 # R3 (left side)	            D7	            Red LED
 # R4 (left side)	            D6	            Orange LED
-# LED_R_1 pad	                A0	            light-sensing element (not used yet)
+# LED_R_1 pad	                A0	            light-sensing element (not used yet)	
+
 
 
 substitutions:
@@ -28,6 +29,10 @@ globals:
     type: bool
     restore_value: no
     initial_value: "true"
+  - id: night_mode_enabled # if true: show only on orange and red not green
+    type: bool
+    restore_value: true
+    initial_value: "true"
   
   
 esphome:
@@ -35,7 +40,7 @@ esphome:
   platform: ESP8266
   board: d1_mini
   on_boot:
-    priority: 600 #600: This is where most sensors are set up.
+    priority: 600 #600: This is where most sensors are set up. 30
     then:
       - light.turn_on:
           id: lightgreen
@@ -117,6 +122,27 @@ output:
 switch:
   - platform: restart
     name: "$friendly_name Restart"
+    icon: "mdi:restart"
+  - platform: template
+    id: nightmode_switch # id(nightmode_switch).publish_state(false);
+    name: "$friendly_name Night Mode"
+    icon: "mdi:weather-night"
+    lambda: |- 
+      return id(night_mode_enabled);
+    turn_on_action:
+        then:
+        - lambda: |-
+            id(night_mode_enabled) = true;
+            auto lightgreen_call = id(lightgreen).turn_off();
+            auto lightorange_call = id(lightorange).turn_off();
+            auto lightred_call = id(lightred).turn_off();
+            lightgreen_call.perform();
+            lightorange_call.perform();
+            lightred_call.perform();
+    turn_off_action:
+        then:
+        - lambda: |-
+            id(night_mode_enabled) = false;
 
 sensor:
   #- platform: adc
@@ -130,7 +156,7 @@ sensor:
     
   - platform: pm1006
     uart_id: uart_pm1006
-    update_interval: 1s #20s
+    update_interval: 20s
     pm_2_5:
       id: pm1006_sensor
       name: "$friendly_name PM1006"
@@ -144,8 +170,8 @@ sensor:
         lambda: !lambda |-
           auto sensor_value = id(pm1006_sensor).state; // 90
           auto ha_time = id(homeassistant_time).now();
-          if (ha_time.is_valid() && (ha_time.hour < id(daytime_start_hour) && ha_time.hour > id(daytime_start_hour))){
-            // NIGHT MODE - ALL OFF
+          if (ha_time.is_valid() && (id(night_mode_enabled) || (ha_time.hour < id(daytime_start_hour) && ha_time.hour > id(daytime_start_hour))) ){
+            // NIGHT MODE - ALL OFF and never turn on even on red/orange
             auto lightgreen_call = id(lightgreen).turn_off();
             auto lightorange_call = id(lightorange).turn_off();
             auto lightred_call = id(lightred).turn_off();
