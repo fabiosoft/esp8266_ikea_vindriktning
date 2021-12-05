@@ -13,7 +13,7 @@
 
 
 substitutions:
-  friendly_name: "Vindriktning Air Quality Sensor"
+  friendly_name: "Vindriktning AQ Sensor"
   webserver_port: "80"
   
 globals:
@@ -27,9 +27,9 @@ globals:
     initial_value: "22"
   - id: show_good_status # if true: show only on orange and red not green
     type: bool
-    restore_value: no
+    restore_value: true
     initial_value: "true"
-  - id: night_mode_enabled # if true: show only on orange and red not green
+  - id: night_mode_enabled # if true: turn off all leds during from 22 to 8h
     type: bool
     restore_value: true
     initial_value: "true"
@@ -126,6 +126,20 @@ switch:
   - platform: template
     id: nightmode_switch # id(nightmode_switch).publish_state(false);
     name: "$friendly_name Night Mode"
+    icon: "mdi:weather-night"
+    lambda: |- 
+      return id(show_good_status);
+    turn_on_action:
+        then:
+        - lambda: |-
+            id(show_good_status) = true;
+    turn_off_action:
+        then:
+        - lambda: |-
+            id(show_good_status) = false;
+  - platform: template
+    id: goodmode_switch 
+    name: "$friendly_name Good Mode"
     icon: "mdi:weather-night"
     lambda: |- 
       return id(night_mode_enabled);
