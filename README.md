@@ -9,4 +9,6 @@ Now you have two paths… go simple and just passively sniff sensor values and s
 
 If you choose the second path you will get complete control over the device.
 
+![Final product](/PCB/IMG_0503.JPG)
+
 More info here: [www.fabiosoft.com ](https://www.fabiosoft.com/2021/12/02/ikea-hack-making-the-air-quality-sensor-vindriktning-smart-sensor/)
