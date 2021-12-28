@@ -36,7 +36,7 @@ globals:
   
   
 esphome:
-  name: livingroom-particulate-matter
+  name: studyroomaq
   platform: ESP8266
   board: d1_mini
   on_boot:
@@ -124,8 +124,8 @@ switch:
     name: "$friendly_name Restart"
     icon: "mdi:restart"
   - platform: template
-    id: nightmode_switch # id(nightmode_switch).publish_state(false);
-    name: "$friendly_name Night Mode"
+    id: goodmode_switch  # id(nightmode_switch).publish_state(false);
+    name: "$friendly_name Good Mode"
     icon: "mdi:weather-night"
     lambda: |- 
       return id(show_good_status);
@@ -137,9 +137,11 @@ switch:
         then:
         - lambda: |-
             id(show_good_status) = false;
+            auto lightgreen_call = id(lightgreen).turn_off();
+            lightgreen_call.perform();
   - platform: template
-    id: goodmode_switch 
-    name: "$friendly_name Good Mode"
+    id: nightmode_switch
+    name: "$friendly_name Night Mode"
     icon: "mdi:weather-night"
     lambda: |- 
       return id(night_mode_enabled);
